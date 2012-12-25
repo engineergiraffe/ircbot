@@ -1,7 +1,6 @@
-package ircbot.scala.nikokauppila.net
+package ircbot.connection
 
 import java.net.{Socket, ServerSocket}
-import java.util.concurrent.{Executors, ExecutorService}
 import java.io.{InputStreamReader, BufferedReader, BufferedOutputStream}
 
 /**
@@ -10,17 +9,13 @@ import java.io.{InputStreamReader, BufferedReader, BufferedOutputStream}
  *          port:   Int     , Port to connect
  *          debug:  Boolean , Turns debug mode on and off
  **/
-abstract class Connection(val host: String, val port: Int, val debug: Boolean) {
+abstract class Connection(val host: String, val port: Int, val debug: Boolean) extends Runnable {
 
   protected val connection: Socket = new Socket(host, port)
   protected val inputStream: BufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream)) 
   protected val outputStream: BufferedOutputStream = new BufferedOutputStream(connection.getOutputStream)
 
-  /**
-   * Description: Starts handling socket stream.
-   **/
-  def start(f: () => Unit) = { f() }
-
+  def run(): Unit = throw new UnsupportedOperationException("not implemented yet")
   /**
    * Description: Read line from socket input stream
    * Params: f: function (String => Option[String]) , defines what we do to line from stream.

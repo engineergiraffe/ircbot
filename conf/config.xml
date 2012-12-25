@@ -1,0 +1,26 @@
+<ircbot>
+    <!-- Defines is debug mode on or off -->
+    <debug on="false" />
+    <!-- Configuration block for connection setup -->
+    <connection>
+        <network name="irc.quakenet.org" port="6667">
+            <nick>skaalabot1234567</nick>
+            <user>skaalabot12345</user>
+            <channels>
+                <channel name="#testaillaanskaalabottia" />
+                <channel name="#testaillaanskaalabottia2" />
+            </channels>
+        </network>
+        <network name="irc.quakenet.org" port="6667">
+            <nick>scalaasd</nick>
+            <user>skaalabot12345</user>
+            <channels>
+                <channel name="#testaillaanskaalabottia3" />
+            </channels>
+        </network>
+    </connection>
+
+    <!-- Configure bot administrator. -->
+    <!-- All administratoring commands must come from this user and using this password -->
+    <admin nick="niko___" password="bot123" />
+</ircbot>

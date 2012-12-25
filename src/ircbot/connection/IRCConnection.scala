@@ -1,4 +1,6 @@
-package ircbot.scala.nikokauppila.net
+package ircbot.connection
+
+import scala.xml.NodeSeq
 
 /**
  * Description: Class handles all connection related tasks. Including sending messages, joining channels and answering pings.
@@ -6,20 +8,18 @@ package ircbot.scala.nikokauppila.net
  *          port:   Int     , Port to connect
  *          debug:  Boolean , Turns debug mode on and off
  **/
-class IRCConnection(host: String, port: Int, debug: Boolean) extends Connection(host, port, debug){
-
-  // TODO: Channel list must come from botconfic.xml or something like that.
-  private val channels: List[String] = List("#testaillaanskaalabottia")
+class IRCConnection(host: String, port: Int, val user: String, val nick: String, val channels: NodeSeq, debug: Boolean)
+        extends Connection(host, port, debug){
 
   /**
    * Description: Starts connection to irc server.
    *              Set USER and NICK.
    *              Invoke read method and print debug info if needed.
    **/
-  def readSocket(): Unit = {
+  override def run(): Unit = {
     if(connection.isConnected) {
-      send(writeToSocket, "USER scalabot12345 skaalailevabotti eiole :Scala-bot")
-      send(writeToSocket, "NICK scalabot12345")
+      send(writeToSocket, "USER " + user + " dontcare dontcare :Scala-bot")
+      send(writeToSocket, "NICK " + nick)
       while(true) {
         read(readLineFromSocket) match { 
             case Some(line: String) => println(line)
@@ -75,7 +75,7 @@ class IRCConnection(host: String, port: Int, debug: Boolean) extends Connection(
    * Description: Join multiple channels at once. Get channel list from
    * botconfig.xml.
    **/
-  def joinChannels(): Unit = channels.map(c => join(c))
+  def joinChannels(): Unit = (channels \\ "channel").map(c => join((c \\ "@name").text))
 
   /**
    * Description: Join wanted channel.
@@ -101,9 +101,11 @@ class IRCConnection(host: String, port: Int, debug: Boolean) extends Connection(
    * Params: message: String, Message that containt PRIVMSG
    **/
   def handleMessage(message: String): Unit = {
-    val pattern = """:(.*)!(.*) PRIVMSG #(.*) :scalabot12345:(.*)""".r
+    val chPattern = """:(.*)!(.*) PRIVMSG #(.*) :(.*):(.*)""".r
+    val msgPattern = """:(.*)!(.*) PRIVMSG (.*) :(.*)""".r
     message match {
-        case pattern(nick, host, ch, msg)  => sendToChannel("#"+ch.trim, ":" + nick.trim + ":" + msg)
+        case chPattern(unick, uhost, ch, bnick, msg) if nick.equals(bnick.trim)  => sendToChannel("#"+ch.trim, ":" + unick.trim + ":" + msg)
+        case msgPattern(unick, uhost, bnick, msg) if nick.equals(bnick.trim)  => sendToChannel(unick.trim, " :" + msg)
         case _ =>
     }
   }
