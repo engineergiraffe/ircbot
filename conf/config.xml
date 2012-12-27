@@ -1,6 +1,6 @@
 <ircbot>
     <!-- Defines is debug mode on or off -->
-    <debug on="false" />
+    <debug on="true" />
     <!-- Configuration block for connection setup -->
     <connection>
         <network name="irc.quakenet.org" port="6667">

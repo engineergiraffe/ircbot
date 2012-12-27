@@ -1,15 +1,15 @@
 package ircbot.connection
 
-import scala.xml.NodeSeq
+import scala.xml._
+import ircbot.NetworkConfiguration
 
 /**
  * Description: Class handles all connection related tasks. Including sending messages, joining channels and answering pings.
- * Params:  host:   String  , Hostname to connect
- *          port:   Int     , Port to connect
- *          debug:  Boolean , Turns debug mode on and off
+ * Params:  network:    NodeSeq , Network block from configuration for connection
+ *          debug:      Boolean , Turns debug mode on and off
  **/
-class IRCConnection(host: String, port: Int, val user: String, val nick: String, val channels: NodeSeq, debug: Boolean)
-        extends Connection(host, port, debug){
+class IRCConnection(network: NetworkConfiguration, debug: Boolean)
+        extends Connection(network.host, network.port, debug){
 
   /**
    * Description: Starts connection to irc server.
@@ -18,12 +18,11 @@ class IRCConnection(host: String, port: Int, val user: String, val nick: String,
    **/
   override def run(): Unit = {
     if(connection.isConnected) {
-      send(writeToSocket, "USER " + user + " dontcare dontcare :Scala-bot")
-      send(writeToSocket, "NICK " + nick)
+      send(writeToSocket, "USER " + network.user + " dontcare dontcare :Scala-bot")
+      send(writeToSocket, "NICK " + network.nick)
       while(true) {
-        read(readLineFromSocket) match { 
-            case Some(line: String) => println(line)
-            case None =>
+        read(readLineFromSocket).foreach { line =>
+            if(debug) println(line)
         }
       }
     }
@@ -39,21 +38,21 @@ class IRCConnection(host: String, port: Int, val user: String, val nick: String,
       // If irc server send "PING :n", it must be answered with "PONG n".
       case i if (i split ":")(0).trim == "PING" => { 
                                     pong((i split ":")(1))
-                                    if(debug) Some(i) else None
+                                    Some(i)
                                 }
       // If line contains ":End of /MOTD" message, it certain that bot can joint to channels.
       case i if i contains ":End of /MOTD" => { 
                                     joinChannels
-                                    if(debug) Some(i) else None
+                                    Some(i)
                                 }
       // PRIVMSG indicated that some of channels have messages which bot must handle somehow. 
       // It can process message or reject it.
       case i if i contains "PRIVMSG" => { 
                                     handleMessage(i)
-                                    if(debug) Some(i) else None
+                                    Some(i)
                                 }
       // This is just for debugging application.
-      case i if (debug && i != null)  => Some(i)
+      case i if i != null => Some(i)
       case _ => None
     }
 
@@ -75,7 +74,7 @@ class IRCConnection(host: String, port: Int, val user: String, val nick: String,
    * Description: Join multiple channels at once. Get channel list from
    * botconfig.xml.
    **/
-  def joinChannels(): Unit = (channels \\ "channel").map(c => join((c \\ "@name").text))
+  def joinChannels(): Unit = network.channels.map(c => join(c))
 
   /**
    * Description: Join wanted channel.
@@ -104,8 +103,8 @@ class IRCConnection(host: String, port: Int, val user: String, val nick: String,
     val chPattern = """:(.*)!(.*) PRIVMSG #(.*) :(.*):(.*)""".r
     val msgPattern = """:(.*)!(.*) PRIVMSG (.*) :(.*)""".r
     message match {
-        case chPattern(unick, uhost, ch, bnick, msg) if nick.equals(bnick.trim)  => sendToChannel("#"+ch.trim, ":" + unick.trim + ":" + msg)
-        case msgPattern(unick, uhost, bnick, msg) if nick.equals(bnick.trim)  => sendToChannel(unick.trim, " :" + msg)
+        case chPattern(unick, uhost, ch, bnick, msg) if network.nick.equals(bnick.trim)  => sendToChannel("#"+ch.trim, ":" + unick.trim + ":" + msg)
+        case msgPattern(unick, uhost, bnick, msg) if network.nick.equals(bnick.trim)  => sendToChannel(unick.trim, " :" + msg)
         case _ =>
     }
   }
