@@ -1,6 +1,9 @@
 package ircbot.connection
 
 import scala.xml._
+import scala.actors.Actor
+import scala.actors.Actor._
+import ircbot.MessageHandler
 import ircbot.NetworkConfiguration
 
 /**
@@ -92,21 +95,29 @@ class IRCConnection(network: NetworkConfiguration, debug: Boolean)
   def sendToChannel(channel: String, message: String): Unit =
     send(writeToSocket, "PRIVMSG " + channel + " " + message)
 
-  /**
-   * Description: Handles message. If message havent assing to bot, reject it. 
-   * If message doesnt have any keywords just echo it back, else trigger 
-   * function corresponding keyword.
-   *
-   * Params: message: String, Message that containt PRIVMSG
-   **/
-  def handleMessage(message: String): Unit = {
-    val chPattern = """:(.*)!(.*) PRIVMSG #(.*) :(.*):(.*)""".r
-    val msgPattern = """:(.*)!(.*) PRIVMSG (.*) :(.*)""".r
-    message match {
-        case chPattern(unick, uhost, ch, bnick, msg) if network.nick.equals(bnick.trim)  => sendToChannel("#"+ch.trim, ":" + unick.trim + ":" + msg)
-        case msgPattern(unick, uhost, bnick, msg) if network.nick.equals(bnick.trim)  => sendToChannel(unick.trim, " :" + msg)
-        case _ =>
+
+  def handleMessage(message: String): Actor = actor {
+    MessageHandler ! message
+    receive {
+        case msg: String => sendToChannel("#testaillaanskaalabottia", msg)
     }
   }
+
+  ///**
+  // * Description: Handles message. If message havent assing to bot, reject it. 
+  // * If message doesnt have any keywords just echo it back, else trigger 
+  // * function corresponding keyword.
+  // *
+  // * Params: message: String, Message that containt PRIVMSG
+  // **/
+  //def handleMessage(message: String): Unit = {
+  //  val chPattern = """:(.*)!(.*) PRIVMSG #(.*) :(.*):(.*)""".r
+  //  val msgPattern = """:(.*)!(.*) PRIVMSG (.*) :(.*)""".r
+  //  message match {
+  //      case chPattern(unick, uhost, ch, bnick, msg) if network.nick.equals(bnick.trim)  => sendToChannel("#"+ch.trim, ":" + unick.trim + ":" + msg)
+  //      case msgPattern(unick, uhost, bnick, msg) if network.nick.equals(bnick.trim)  => sendToChannel(unick.trim, " :" + msg)
+  //      case _ =>
+  //  }
+  //}
 
 }

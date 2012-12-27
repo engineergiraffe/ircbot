@@ -8,6 +8,7 @@ object Bot {
 
     def main(args: Array[String]) {
         val config = new Configuration("conf/config.xml")
+        MessageHandler.start
         config.networks.map(network => (new Thread(new IRCConnection(new NetworkConfiguration(network), config.debug)).start))
     }
 

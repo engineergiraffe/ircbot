@@ -1,6 +1,10 @@
 <ircbot>
-    <!-- Defines is debug mode on or off -->
+    <!-- Defines is debug mode on or off (true / false) -->
     <debug on="true" />
+
+    <!-- Configure bot administrator. -->
+    <!-- All administratoring commands must come from this user and using this password -->
+    <admin nick="niko___" password="bot123" />
     <!-- Configuration block for connection setup -->
     <connection>
         <network name="irc.quakenet.org" port="6667">
@@ -8,19 +12,23 @@
             <user>skaalabot12345</user>
             <channels>
                 <channel name="#testaillaanskaalabottia" />
-                <channel name="#testaillaanskaalabottia2" />
             </channels>
         </network>
+        <!--
         <network name="irc.quakenet.org" port="6667">
             <nick>scalaasd</nick>
             <user>skaalabot12345</user>
             <channels>
                 <channel name="#testaillaanskaalabottia3" />
+                <channel name="#testaillaanskaalabottia2" />
             </channels>
         </network>
+        -->
     </connection>
 
-    <!-- Configure bot administrator. -->
-    <!-- All administratoring commands must come from this user and using this password -->
-    <admin nick="niko___" password="bot123" />
+    <!-- Configuration for plugins -->
+    <!-- All used plugins must list here -->
+    <plugins dir="classes/ircbot/plugins/">
+        <plugin name="Echo" />
+    </plugins>
 </ircbot>
