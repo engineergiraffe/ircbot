@@ -77,7 +77,7 @@ class IRCConnection(network: NetworkConfiguration, debug: Boolean)
    * Description: Join multiple channels at once. Get channel list from
    * botconfig.xml.
    **/
-  def joinChannels(): Unit = network.channels.map(c => join(c))
+  def joinChannels(): Unit = network.channels.foreach(c => join(c))
 
   /**
    * Description: Join wanted channel.
@@ -87,37 +87,20 @@ class IRCConnection(network: NetworkConfiguration, debug: Boolean)
   def join(channel: String): Unit = send(writeToSocket, "JOIN " + channel)
 
   /**
-   * Description: Send message to channel
+   * Description: Send message to receiver
    *
-   * Params:  channel: String, Channel where send message
-   *          message: String, Message to send
+   * Params:  receiver: String, receiver who get message. Channel or user.
+   *          message:  String, Message to send
    */
-  def sendToChannel(channel: String, message: String): Unit =
-    send(writeToSocket, "PRIVMSG " + channel + " " + message)
-
-
-  def handleMessage(message: String): Actor = actor {
-    MessageHandler ! message
-    receive {
-        case msg: String => sendToChannel("#testaillaanskaalabottia", msg)
-    }
+  def sendTo(receiver: String, message: String): Unit = {
+    val msg = ":" + network.nick + " PRIVMSG " + receiver + " :" +message
+    send(writeToSocket, msg)
   }
 
-  ///**
-  // * Description: Handles message. If message havent assing to bot, reject it. 
-  // * If message doesnt have any keywords just echo it back, else trigger 
-  // * function corresponding keyword.
-  // *
-  // * Params: message: String, Message that containt PRIVMSG
-  // **/
-  //def handleMessage(message: String): Unit = {
-  //  val chPattern = """:(.*)!(.*) PRIVMSG #(.*) :(.*):(.*)""".r
-  //  val msgPattern = """:(.*)!(.*) PRIVMSG (.*) :(.*)""".r
-  //  message match {
-  //      case chPattern(unick, uhost, ch, bnick, msg) if network.nick.equals(bnick.trim)  => sendToChannel("#"+ch.trim, ":" + unick.trim + ":" + msg)
-  //      case msgPattern(unick, uhost, bnick, msg) if network.nick.equals(bnick.trim)  => sendToChannel(unick.trim, " :" + msg)
-  //      case _ =>
-  //  }
-  //}
-
+  def handleMessage(message: String): Actor = actor {
+    MessageHandler ! (message, network.nick)
+    receive {
+        case (Some(to: String), Some(message: String)) => sendTo(to, message)
+    }
+  }
 }

@@ -14,6 +14,9 @@ class Configuration(path: String) {
 
     // Value that contains list of all networks.
     val networks: List[Node] = (connection \ "network").toList
+
+    // Value that contains list of all plugins.
+    val plugins: List[String] = (xml \ "plugins" \ "plugin").map(p => (p \ "@name").text).toList
 }
 
 class NetworkConfiguration(val network: Node) {

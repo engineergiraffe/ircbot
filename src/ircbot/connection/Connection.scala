@@ -20,7 +20,7 @@ abstract class Connection(val host: String, val port: Int, val debug: Boolean) e
    * Description: Read line from socket input stream
    * Params: f: function (String => Option[String]) , defines what we do to line from stream.
    **/
-  def read(f: (String) => Option[String]): Option[String] = { return f(inputStream.readLine) }
+  def read(f: (String) => Option[String]): Option[String] = f(inputStream.readLine)
 
   /**
    * Description: Handles message sending.

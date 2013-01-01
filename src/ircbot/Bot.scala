@@ -1,7 +1,6 @@
 package ircbot
 
 import scala.xml._
-
 import ircbot.connection._
 
 object Bot {
